@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEasy AI</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  color: #1a1a2e;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.shop-logo { font-size: 1.8rem; }
+.shop-info h1 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+.shop-info p { font-size: 11px; color: #64748b; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.cart-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  color: #1a1a2e;
+}
+.cart-count {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+
+/* Shop Setup Banner */
+.setup-banner {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  margin: 1rem;
+  border-radius: 16px;
+}
+.setup-banner h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+.setup-banner p { font-size: 12px; opacity: 0.85; margin-bottom: 12px; }
+.setup-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Container */
+.container { padding: 0 1rem 2rem; max-width: 800px; margin: 0 auto; }
+
+/* Search */
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin: 1rem 0;
+}
+.search-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+.search-input:focus { border-color: #667eea; }
+.search-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Categories */
+.categories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
+}
+.categories::-webkit-scrollbar { display: none; }
+.cat-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #64748b;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.cat-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Product Grid */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.product-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.product-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.product-img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+.product-info { padding: 10px; }
+.product-name { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+.product-desc { font-size: 11px; color: #94a3b8; margin-bottom: 6px; line-height: 1.4; }
+.product-footer { display: flex; align-items: center; justify-content: space-between; }
+.product-price { font-size: 15px; font-weight: 700; color: #667eea; }
+.product-price span { font-size: 10px; color: #94a3b8; text-decoration: line-through; margin-left: 4px; }
+.add-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.badge-new {
+  display: inline-block;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.badge-hot {
+  display: inline-block;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+/* Shop Info Card */
+.shop-info-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 1rem;
+}
+.shop-info-title { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; letter-spacing: 0.05em; }
+.info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #1a1a2e; }
+.info-icon { font-size: 16px; }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.contact-action {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.ca-whatsapp { background: #dcfce7; color: #16a34a; }
+.ca-call { background: #dbeafe; color: #2563eb; }
+.ca-map { background: #fef3c7; color: #d97706; }
+.ca-share { background: #f3e8ff; color: #9333ea; }
+
+/* Cart Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: flex-end;
+}
+.modal-overlay.show { display: flex; }
+.cart-modal {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.cart-title { font-size: 16px; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; }
+.close-btn { background: #f1f5f9; border: none; border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 16px; }
+.cart-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+.cart-item-emoji { font-size: 2rem; }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-size: 13px; font-weight: 600; }
+.cart-item-price { font-size: 12px; color: #667eea; font-weight: 600; }
+.cart-item-qty { display: flex; align-items: center; gap: 8px; }
+.qty-btn { background: #f1f5f9; border: none; border-radius: 6px; width: 26px; height: 26px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.qty-num { font-size: 13px; font-weight: 600; min-width: 20px; text-align: center; }
+.cart-total { display: flex; justify-content: space-between; padding: 12px 0; font-weight: 700; font-size: 15px; }
+.order-btn {
+  width: 100%;
+  padding: 14px;
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.empty-cart { text-align: center; padding: 2rem; color: #94a3b8; font-size: 14px; }
+
+/* Setup Modal */
+.setup-modal {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.setup-title { font-size: 16px; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+.field { margin-bottom: 12px; }
+.field label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  color: #1a1a2e;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: #667eea; }
+.field textarea { resize: vertical; min-height: 60px; }
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* Add Product Modal */
+.add-product-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #667eea;
+  border: 2px dashed #667eea;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+/* WhatsApp Float */
+.wa-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37,211,102,0.4);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Rating */
+.rating { color: #f59e0b; font-size: 11px; margin-bottom: 4px; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.empty-state .e-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="shop-logo" id="shopLogo">🛒</div>
+  <div class="shop-info">
+    <h1 id="shopNameHeader">ShopEasy AI</h1>
+    <p id="shopTagline">Setup karo apni free online shop!</p>
+  </div>
+  <div class="header-right">
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Cart
+      <span class="cart-count" id="cartCount" style="display:none">0</span>
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Setup Banner -->
+  <div class="setup-banner" id="setupBanner">
+    <h2>🚀 Apni Free Online Shop Banao!</h2>
+    <p>5 minute mein apni dukaan online karein — bilkul free</p>
+    <button class="setup-btn" onclick="openSetup()">✨ Shop Setup Karo</button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-row">
+    <input class="search-input" id="searchInput" placeholder="🔍 Product dhundho..." oninput="searchProducts()">
+    <button class="search-btn" onclick="searchProducts()">Search</button>
+  </div>
+
+  <!-- Categories -->
+  <div class="categories" id="categoriesRow">
+    <button class="cat-btn active" onclick="filterCat('all', this)">🛍️ Sab</button>
+    <button class="cat-btn" onclick="filterCat('food', this)">🍕 Khana</button>
+    <button class="cat-btn" onclick="filterCat('clothes', this)">👕 Kapde</button>
+    <button class="cat-btn" onclick="filterCat('electronics', this)">📱 Electronics</button>
+    <button class="cat-btn" onclick="filterCat('beauty', this)">💄 Beauty</button>
+    <button class="cat-btn" onclick="filterCat('home', this)">🏠 Ghar</button>
+    <button class="cat-btn" onclick="filterCat('other', this)">📦 Other</button>
+  </div>
+
+  <!-- Products -->
+  <div class="section-title" id="productsLabel">PRODUCTS</div>
+  <div class="product-grid" id="productGrid"></div>
+
+  <!-- Add Product Button -->
+  <button class="add-product-btn" onclick="openAddProduct()">+ Naya Product Add Karo</button>
+
+  <!-- Shop Info -->
+  <div class="shop-info-card" id="shopInfoCard" style="display:none">
+    <div class="shop-info-title">HAMARE BAARE MEIN</div>
+    <div class="info-row"><span class="info-icon">🏪</span><span id="infoName"></span></div>
+    <div class="info-row"><span class="info-icon">📍</span><span id="infoAddress"></span></div>
+    <div class="info-row"><span class="info-icon">⏰</span><span id="infoHours"></span></div>
+    <div class="info-row"><span class="info-icon">📦</span><span id="infoDelivery"></span></div>
+    <div class="contact-grid">
+      <button class="contact-action ca-whatsapp" id="waBtn">💬 WhatsApp</button>
+      <button class="contact-action ca-call" id="callBtn">📞 Call</button>
+      <button class="contact-action ca-map" onclick="alert('Map feature coming soon!')">🗺️ Map</button>
+      <button class="contact-action ca-share" onclick="shareShop()">📤 Share</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- WhatsApp Float -->
+<button class="wa-float" id="waFloat" onclick="orderWhatsApp()" title="Order on WhatsApp">💬</button>
+
+<!-- Cart Modal -->
+<div class="modal-overlay" id="cartModal">
+  <div class="cart-modal">
+    <div class="cart-title">
+      🛒 Aapka Cart
+      <button class="close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cartItems"></div>
+    <div class="cart-total" id="cartTotal" style="display:none">
+      <span>Total:</span>
+      <span id="totalAmount" style="color:#667eea"></span>
+    </div>
+    <button class="order-btn" onclick="orderWhatsApp()">
+      💬 WhatsApp pe Order Karo
+    </button>
+  </div>
+</div>
+
+<!-- Setup Modal -->
+<div class="modal-overlay" id="setupModal">
+  <div class="setup-modal">
+    <div class="setup-title">
+      🏪 Apni Shop Setup Karo
+      <button class="close-btn" onclick="closeSetup()">✕</button>
+    </div>
+
+    <div class="field">
+      <label>🏪 Dukaan Ka Naam *</label>
+      <input type="text" id="sName" placeholder="Jaise: Sharma General Store">
+    </div>
+    <div class="field">
+      <label>😊 Shop Logo (Emoji)</label>
+      <input type="text" id="sLogo" placeholder="Jaise: 🛒 🍕 👗 📱" maxlength="2">
+    </div>
+    <div class="field">
+      <label>📱 WhatsApp Number *</label>
+      <input type="tel" id="sWhatsapp" placeholder="91XXXXXXXXXX">
+    </div>
+    <div class="field">
+      <label>📞 Call Number</label>
+      <input type="tel" id="sPhone" placeholder="Aapka phone number">
+    </div>
+    <div class="field">
+      <label>📍 Address</label>
+      <input type="text" id="sAddress" placeholder="Dukaan ka address">
+    </div>
+    <div class="field">
+      <label>⏰ Khulne Ka Samay</label>
+      <input type="text" id="sHours" placeholder="Jaise: 9 AM - 9 PM, Mon-Sat">
+    </div>
+    <div class="field">
+      <label>🎨 Brand Color</label>
+      <input type="color" id="sColor" value="#667eea" style="height:40px;padding:4px;">
+    </div>
+    <div class="field">
+      <label>📦 Delivery Info</label>
+      <input type="text" id="sDelivery" placeholder="Jaise: Free delivery above ₹500">
+    </div>
+    <button class="save-btn" onclick="saveShop()">✅ Shop Save Karo</button>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="setup-modal">
+    <div class="setup-title">
+      ➕ Naya Product Add Karo
+      <button class="close-btn" onclick="closeAddProduct()">✕</button>
+    </div>
+
+    <div class="field">
+      <label>📦 Product Naam *</label>
+      <input type="text" id="pName" placeholder="Jaise: Fresh Samosa, Blue T-Shirt">
+    </div>
+    <div class="field">
+      <label>😊 Product Emoji</label>
+      <input type="text" id="pEmoji" placeholder="Jaise: 🍕 👕 📱" maxlength="2">
+    </div>
+    <div class="field">
+      <label>💰 Price (₹) *</label>
+      <input type="number" id="pPrice" placeholder="Jaise: 299">
+    </div>
+    <div class="field">
+      <label>🏷️ Original Price (₹) — Optional</label>
+      <input type="number" id="pOriginal" placeholder="Strikethrough price (if on sale)">
+    </div>
+    <div class="field">
+      <label>📝 Description</label>
+      <textarea id="pDesc" placeholder="Product ke baare mein 1-2 lines..."></textarea>
+    </div>
+    <div class="field">
+      <label>📂 Category</label>
+      <select id="pCategory">
+        <option value="other">📦 Other</option>
+        <option value="food">🍕 Khana / Food</option>
+        <option value="clothes">👕 Kapde / Clothes</option>
+        <option value="electronics">📱 Electronics</option>
+        <option value="beauty">💄 Beauty</option>
+        <option value="home">🏠 Ghar / Home</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>⭐ Rating (1-5)</label>
+      <input type="number" id="pRating" placeholder="Jaise: 4.5" min="1" max="5" step="0.1">
+    </div>
+    <div class="field">
+      <label>🏷️ Badge</label>
+      <select id="pBadge">
+        <option value="">Koi Badge Nahi</option>
+        <option value="new">🆕 New</option>
+        <option value="hot">🔥 Hot</option>
+      </select>
+    </div>
+    <button class="save-btn" onclick="saveProduct()">✅ Product Add Karo</button>
+  </div>
+</div>
+
+<script>
+// State
+let shop = JSON.parse(localStorage.getItem('shopData')) || null;
+let products = JSON.parse(localStorage.getItem('products')) || [];
+let cart = [];
+let currentFilter = 'all';
+
+// Default products if none exist
+if(products.length === 0) {
+  products = [
+    { id:1, name:'Fresh Samosa', emoji:'🥟', price:20, original:null, desc:'Crispy aloo samosa — garam garam!', category:'food', rating:4.8, badge:'hot' },
+    { id:2, name:'Cotton T-Shirt', emoji:'👕', price:299, original:499, desc:'100% cotton, comfortable fit, all sizes', category:'clothes', rating:4.5, badge:'new' },
+    { id:3, name:'Phone Cover', emoji:'📱', price:149, original:299, desc:'Premium quality mobile cover', category:'electronics', rating:4.3, badge:'' },
+    { id:4, name:'Rose Face Cream', emoji:'🌹', price:199, original:null, desc:'Natural ingredients, daily moisturizer', category:'beauty', rating:4.6, badge:'new' },
+    { id:5, name:'Steel Tiffin Box', emoji:'🍱', price:349, original:500, desc:'3 compartment, leak proof, microwave safe', category:'home', rating:4.7, badge:'' },
+    { id:6, name:'Masala Chai Pack', emoji:'☕', price:120, original:null, desc:'Special blend — 50 cups', category:'food', rating:4.9, badge:'hot' },
+  ];
+  saveProducts();
+}
+
+function saveProducts() {
+  localStorage.setItem('products', JSON.stringify(products));
+}
+
+function getColor() {
+  return (shop && shop.color) ? shop.color : '#667eea';
+}
+
+// Render products
+function renderProducts(list) {
+  const grid = document.getElementById('productGrid');
+  if(list.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:span 2">
+      <div class="e-icon">📦</div>
+      <p>Koi product nahi mila</p>
+    </div>`;
+    return;
+  }
+  const color = getColor();
+  grid.innerHTML = list.map(p => `
+    <div class="product-card">
+      <div class="product-img">${p.emoji||'📦'}</div>
+      <div class="product-info">
+        ${p.badge==='new'?'<span class="badge-new">NEW</span>':''}
+        ${p.badge==='hot'?'<span class="badge-hot">🔥 HOT</span>':''}
+        ${p.rating?`<div class="rating">${'⭐'.repeat(Math.floor(p.rating))} ${p.rating}</div>`:''}
+        <div class="product-name">${p.name}</div>
+        ${p.desc?`<div class="product-desc">${p.desc}</div>`:''}
+        <div class="product-footer">
+          <div class="product-price" style="color:${color}">
+            ₹${p.price}
+            ${p.original?`<span>₹${p.original}</span>`:''}
+          </div>
+          <button class="add-btn" style="background:${color}" onclick="addToCart(${p.id})">+ Add</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Filter
+function filterCat(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.style.background = cat==='all'?getColor():'';
+  btn.style.color = cat==='all'?'#fff':'';
+  btn.style.borderColor = cat==='all'?getColor():'';
+  const filtered = cat==='all' ? products : products.filter(p=>p.category===cat);
+  renderProducts(filtered);
+}
+
+// Search
+function searchProducts() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = products.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    (p.desc && p.desc.toLowerCase().includes(q))
+  );
+  renderProducts(filtered);
+}
+
+// Cart
+function addToCart(id) {
+  const product = products.find(p=>p.id===id);
+  if(!product) return;
+  const existing = cart.find(c=>c.id===id);
+  if(existing) {
+    existing.qty++;
+  } else {
+    cart.push({...product, qty:1});
+  }
+  updateCartCount();
+  // Mini feedback
+  const btn = event.target;
+  btn.textContent = '✓';
+  btn.style.background = '#22c55e';
+  setTimeout(()=>{
+    btn.textContent = '+ Add';
+    btn.style.background = getColor();
+  }, 800);
+}
+
+function updateCartCount() {
+  const count = cart.reduce((a,c)=>a+c.qty, 0);
+  const el = document.getElementById('cartCount');
+  el.textContent = count;
+  el.style.display = count>0 ? 'flex' : 'none';
+}
+
+function openCart() {
+  const modal = document.getElementById('cartModal');
+  modal.classList.add('show');
+  renderCart();
+}
+
+function closeCart() {
+  document.getElementById('cartModal').classList.remove('show');
+}
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  const totalEl = document.getElementById('cartTotal');
+  const totalAmt = document.getElementById('totalAmount');
+  if(cart.length===0) {
+    container.innerHTML = '<div class="empty-cart">🛒 Cart khaali hai!<br><small>Products add karo</small></div>';
+    totalEl.style.display = 'none';
+    return;
+  }
+  const color = getColor();
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-emoji">${item.emoji||'📦'}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price" style="color:${color}">₹${item.price} × ${item.qty} = ₹${item.price*item.qty}</div>
+      </div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+      </div>
+    </div>
+  `).join('');
+  const total = cart.reduce((a,c)=>a+(c.price*c.qty), 0);
+  totalEl.style.display = 'flex';
+  totalAmt.textContent = '₹'+total;
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c=>c.id===id);
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty<=0) cart = cart.filter(c=>c.id!==id);
+  updateCartCount();
+  renderCart();
+}
+
+// WhatsApp Order
+function orderWhatsApp() {
+  const waNumber = shop ? shop.whatsapp : '';
+  if(!waNumber) { alert('Pehle shop setup karo aur WhatsApp number daalo!'); openSetup(); return; }
+  if(cart.length===0) { alert('Cart khaali hai! Pehle products add karo.'); closeCart(); return; }
+  const shopName = shop ? shop.name : 'Shop';
+  let msg = `*${shopName} — New Order* 🛒\n\n`;
+  cart.forEach(item => {
+    msg += `• ${item.emoji} ${item.name} × ${item.qty} = ₹${item.price*item.qty}\n`;
+  });
+  const total = cart.reduce((a,c)=>a+(c.price*c.qty), 0);
+  msg += `\n*Total: ₹${total}*\n\nPlease confirm my order!`;
+  window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`);
+}
+
+// Share shop
+function shareShop() {
+  const shopName = shop ? shop.name : 'ShopEasy AI';
+  const text = `${shopName} ki online shop visit karo: ${window.location.href}`;
+  if(navigator.share) {
+    navigator.share({ title: shopName, text: text, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copy ho gaya! Share karo apne customers ke saath 🎉');
+  }
+}
+
+// Setup
+function openSetup() {
+  document.getElementById('setupModal').classList.add('show');
+}
+function closeSetup() {
+  document.getElementById('setupModal').classList.remove('show');
+}
+
+function saveShop() {
+  const name = document.getElementById('sName').value.trim();
+  const whatsapp = document.getElementById('sWhatsapp').value.trim();
+  if(!name || !whatsapp) { alert('Naam aur WhatsApp number zaroori hai!'); return; }
+  shop = {
+    name, whatsapp,
+    logo: document.getElementById('sLogo').value || '🛒',
+    phone: document.getElementById('sPhone').value,
+    address: document.getElementById('sAddress').value,
+    hours: document.getElementById('sHours').value,
+    color: document.getElementById('sColor').value,
+    delivery: document.getElementById('sDelivery').value,
+  };
+  localStorage.setItem('shopData', JSON.stringify(shop));
+  applyShop();
+  closeSetup();
+  alert('🎉 Aapki shop setup ho gayi! Ab products add karo.');
+}
+
+function applyShop() {
+  if(!shop) return;
+  const color = shop.color || '#667eea';
+  document.getElementById('shopLogo').textContent = shop.logo || '🛒';
+  document.getElementById('shopNameHeader').textContent = shop.name;
+  document.getElementById('shopTagline').textContent = shop.address || 'Online Shop';
+  document.getElementById('setupBanner').style.display = 'none';
+  document.getElementById('shopInfoCard').style.display = 'block';
+  document.getElementById('infoName').textContent = shop.name;
+  document.getElementById('infoAddress').textContent = shop.address || 'Address setup karo';
+  document.getElementById('infoHours').textContent = shop.hours || 'Timings update karo';
+  document.getElementById('infoDelivery').textContent = shop.delivery || 'Delivery info add karo';
+  document.getElementById('waBtn').onclick = () =>
+    window.open(`https://wa.me/${shop.whatsapp}?text=Namaste! Mujhe order karna hai`);
+  document.getElementById('callBtn').onclick = () => window.open(`tel:${shop.phone || shop.whatsapp}`);
+  // Apply color
+  document.querySelectorAll('.cat-btn.active').forEach(b => {
+    b.style.background = color;
+    b.style.borderColor = color;
+  });
+  document.title = shop.name + ' — Online Shop';
+  renderProducts(products);
+}
+
+// Add Product
+function openAddProduct() {
+  document.getElementById('addProductModal').classList.add('show');
+}
+function closeAddProduct() {
+  document.getElementById('addProductModal').classList.remove('show');
+}
+
+function saveProduct() {
+  const name = document.getElementById('pName').value.trim();
+  const price = document.getElementById('pPrice').value;
+  if(!name || !price) { alert('Naam aur price zaroori hai!'); return; }
+  const newProduct = {
+    id: Date.now(),
+    name,
+    emoji: document.getElementById('pEmoji').value || '📦',
+    price: parseFloat(price),
+    original: document.getElementById('pOriginal').value ? parseFloat(document.getElementById('pOriginal').value) : null,
+    desc: document.getElementById('pDesc').value,
+    category: document.getElementById('pCategory').value,
+    rating: document.getElementById('pRating').value ? parseFloat(document.getElementById('pRating').value) : null,
+    badge: document.getElementById('pBadge').value,
+  };
+  products.push(newProduct);
+  saveProducts();
+  closeAddProduct();
+  // Clear fields
+  ['pName','pEmoji','pPrice','pOriginal','pDesc','pRating'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('pBadge').value='';
+  document.getElementById('pCategory').value='other';
+  renderProducts(currentFilter==='all' ? products : products.filter(p=>p.category===currentFilter));
+  alert('✅ Product add ho gaya!');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if(e.target === this) this.classList.remove('show');
+  });
+});
+
+// Init
+window.onload = function() {
+  if(shop) applyShop();
+  else renderProducts(products);
+};
+</script>
+</body>
+  </html>
